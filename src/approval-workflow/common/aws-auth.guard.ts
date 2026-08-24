@@ -17,6 +17,8 @@ export interface AwsUser {
   role: string; // employee | manager | finance
   department: string;
   managerId: string | null;
+  employeeId: string | null;
+  title: string | null;
   tenantId?: string;
 }
 
