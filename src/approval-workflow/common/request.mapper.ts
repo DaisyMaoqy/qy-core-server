@@ -11,6 +11,9 @@ export const requestInclude = {
   audit: { orderBy: { at: 'asc' } },
   legs: true,
   budget: true,
+  // 申请人角色：供前端 canViewRequest 判断「主管/财务能否查看」。
+  // 后端模式下申请人是后端 UUID，前端本地组织表查不到，必须随单返回。
+  applicant: { select: { id: true, role: true } },
 } satisfies Prisma.RequestInclude;
 
 export type RequestWithRelations = Prisma.RequestGetPayload<{
@@ -66,6 +69,7 @@ export function toRequestResponse(r: RequestWithRelations): RequestResponse {
     type: r.type,
     applicantId: r.applicantId,
     applicantName: r.applicantName,
+    applicantRole: r.applicant.role,
     department: r.department,
     status: r.status,
     createdAt: r.createdAt.toISOString(),

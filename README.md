@@ -8,7 +8,7 @@
 
 - **框架**: NestJS 9
 - **ORM**: Prisma 5
-- **数据库**: MySQL 5.7
+- **数据库**: MySQL 8.0
 - **认证**: JWT
 - **语言**: TypeScript
 - **容器化**: Docker + Docker Compose
@@ -108,7 +108,7 @@ qy-core-server/
 
 - Node.js >= 18（推荐 v20.12.0）
 - Docker & Docker Compose
-- MySQL 5.7（或通过 Docker 启动）
+- MySQL 8.0（或通过 Docker 启动）
 
 ### 1. 安装依赖
 
