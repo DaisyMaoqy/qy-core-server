@@ -465,10 +465,25 @@ export class RequestService {
   }
 
   // ---------- 报表 ----------
-  async dashboard(query: DashboardQueryDto): Promise<DashboardResponse> {
+  /**
+   * 看板聚合。口径与前端统计报表表格（deptRequests）对齐：
+   * - 仅统计「当前用户所在部门」（前端按 identity.user.department 过滤）；
+   * - 排除本人发起的单据（前端 deptRequests 排除 applicantId === self）；
+   * - 排除草稿（前端 deptRequests 排除 status === 'draft'）。
+   * 这样看板的概览卡/图表与下方申请记录表在数据范围上保持一致。
+   * type/year/month 仍作为附加维度由 query 控制。
+   */
+  async dashboard(
+    query: DashboardQueryDto,
+    user: AwsUser,
+  ): Promise<DashboardResponse> {
     const where: Record<string, unknown> = {};
     if (query.type) where.type = query.type;
-    if (query.department) where.department = query.department;
+    // 部门范围：优先用显式 query.department，否则回落到当前用户所在部门
+    where.department = query.department ?? user.department;
+    // 排除本人 + 排除草稿，与前端 deptRequests 对齐
+    where.applicantId = { not: user.id };
+    where.status = { not: 'draft' };
     if (query.year) {
       const y = query.year;
       if (query.month) {
