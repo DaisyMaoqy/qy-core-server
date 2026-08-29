@@ -48,6 +48,8 @@ export interface RequestResponse {
   type: string; // travel | leave
   applicantId: string;
   applicantName: string;
+  /** 申请人角色：前端 canViewRequest 判断主管/财务可见性用，后端 UUID 无法在本地组织表反查 */
+  applicantRole: string;
   department: string;
   status: string;
   createdAt: string; // ISO

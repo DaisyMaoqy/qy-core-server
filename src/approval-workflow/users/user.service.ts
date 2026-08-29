@@ -11,14 +11,27 @@ import { RequestResponse } from '../common/request.types';
 export class UserService {
   constructor(private readonly prisma: AwsPrismaService) {}
 
-  /** 当前登录用户（信息来自 JWT，无需查库） */
-  getMe(user: AwsUser) {
+  /** 当前登录用户：以 JWT 中的 id 回查库，补齐 employeeId / title 等字段 */
+  async getMe(user: AwsUser) {
+    const full = await this.prisma.user.findUnique({ where: { id: user.id } });
+    if (!full) {
+      // 极端兜底：JWT 有效但库中无对应用户，至少返回 JWT 内字段
+      return {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        department: user.department,
+        managerId: user.managerId,
+      };
+    }
     return {
-      id: user.id,
-      name: user.name,
-      role: user.role,
-      department: user.department,
-      managerId: user.managerId,
+      id: full.id,
+      employeeId: full.employeeId,
+      name: full.name,
+      title: full.title ?? '',
+      role: full.role,
+      department: full.department,
+      managerId: full.managerId,
     };
   }
 

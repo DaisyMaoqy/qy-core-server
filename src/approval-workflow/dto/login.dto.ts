@@ -23,7 +23,9 @@ export interface LoginResponse {
   token: string;
   user: {
     id: string;
+    employeeId: string;
     name: string;
+    title: string;
     role: string;
     department: string;
     managerId: string | null;

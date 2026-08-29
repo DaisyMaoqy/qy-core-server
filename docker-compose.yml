@@ -7,16 +7,16 @@
 services:
   # 单 MySQL 实例，承载三个独立 schema
   mysql:
-    image: mysql:8.0 #自带 linux/arm64 镜像
+    image: mysql:8.0 #自带 linux/arm64 镜像 生产：image: 你的ACR地址/mysql:8.0
     container_name: qy-core-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_2026
-      MYSQL_DATABASE: ws_design_db
-      MYSQL_USER: ws_design
-      MYSQL_PASSWORD: ws_design_2026
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # 生产 强密码 root_2026_prodqaZ!
+      MYSQL_DATABASE: ${MYSQL_DATABASE} 
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD} # 生产 强密码 ws_design_2026prodqaZ!
     ports:
-      - "3306:3306"
+      - "3306:3306" # 生产需要注释
     volumes:
       - mysql_data:/var/lib/mysql
       - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -36,13 +36,15 @@ services:
     restart: always
     environment:
       ENV_FILE: .env.wdv
-      ENABLE_MODULE: ws-design
+      ENABLE_MODULE: ${ENABLE_MODULE}
       PORT: "3000"
-      AUTH_DATABASE_URL: "mysql://ws_design:ws_design_2026@mysql:3306/auth_db"
-      WS_DESIGN_DATABASE_URL: "mysql://ws_design:ws_design_2026@mysql:3306/ws_design_db"
-      AWS_DATABASE_URL: "mysql://ws_design:ws_design_2026@mysql:3306/approval_workflow_db"
-      JWT_SECRET: "wdv-jwt-secret-change-me-2026"
-      CORS_ORIGINS: "https://wdv.example.com"
+      AUTH_DATABASE_URL: ${AUTH_DATABASE_URL}
+      WS_DESIGN_DATABASE_URL: ${WS_DESIGN_DATABASE_URL}
+      AWS_DATABASE_URL: ${AWS_DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    volumes:
+      - ./prisma:/app/prisma
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,13 +58,17 @@ services:
     restart: always
     environment:
       ENV_FILE: .env.aws
-      ENABLE_MODULE: approval-workflow
+      ENABLE_MODULE: ${ENABLE_MODULE}
       PORT: "3001"
-      AUTH_DATABASE_URL: "mysql://ws_design:ws_design_2026@mysql:3306/auth_db"
-      WS_DESIGN_DATABASE_URL: "mysql://ws_design:ws_design_2026@mysql:3306/ws_design_db"
-      AWS_DATABASE_URL: "mysql://ws_design:ws_design_2026@mysql:3306/approval_workflow_db"
-      JWT_SECRET: "aws-jwt-secret-change-me-2026"
-      CORS_ORIGINS: "https://aws.example.com"
+      # 只跑 aws 依赖的两个库迁移（auth_db 登录 + approval_workflow_db），不依赖 ws-design 库
+      DEPLOY_SCRIPT: prisma:deploy:aws
+      AUTH_DATABASE_URL: ${AUTH_DATABASE_URL}
+      WS_DESIGN_DATABASE_URL: ${WS_DESIGN_DATABASE_URL}
+      AWS_DATABASE_URL: ${AWS_DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    volumes:
+      - ./prisma:/app/prisma
     depends_on:
       mysql:
         condition: service_healthy

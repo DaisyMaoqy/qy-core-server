@@ -40,6 +40,8 @@ export class AwsAuthService {
       role: awsUser.role,
       department: awsUser.department,
       managerId: awsUser.managerId,
+      employeeId: awsUser.employeeId,
+      title: awsUser.title,
       tenantId: dto.tenantId,
     };
     const token = this.jwtService.sign(payload);
@@ -48,7 +50,9 @@ export class AwsAuthService {
       token,
       user: {
         id: awsUser.id,
+        employeeId: awsUser.employeeId,
         name: awsUser.name,
+        title: awsUser.title ?? '',
         role: awsUser.role,
         department: awsUser.department,
         managerId: awsUser.managerId,

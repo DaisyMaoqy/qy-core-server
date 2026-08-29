@@ -8,7 +8,7 @@
 
 - **框架**: NestJS 9
 - **ORM**: Prisma 5
-- **数据库**: MySQL 5.7
+- **数据库**: MySQL 8.0
 - **认证**: JWT
 - **语言**: TypeScript
 - **容器化**: Docker + Docker Compose
@@ -40,7 +40,9 @@ qy-core-server/
 │   ├── ws-design/schema.prisma       # ws_design_db：配置/设计业务库
 │   ├── approval-workflow/schema.prisma # approval_workflow_db：审批业务库
 │   ├── init.sql                      # 三库建库脚本（docker mysql 初始化时执行）
-│   └── seed.ts                       # Mock 数据
+│   ├── seed-auth.ts                  # auth_db：用户/租户 Mock 数据
+│   ├── seed-ws.ts                    # ws_design_db：配置/设计业务 Mock 数据
+│   └── seed-approval.ts             # approval_workflow_db：审批域 Mock 数据
 ├── nginx/nginx.conf            # Nginx 网关：/ws/admin→wdv、/aws→aws
 ├── docker-compose.yml          # Docker 双实例编排（Nginx + 双 server + mysql）
 ├── Dockerfile                   # Docker 镜像
@@ -63,7 +65,7 @@ qy-core-server/
 
 | 表名 | 说明 |
 |------|------|
-| user | 审批侧用户/组织（role / managerId / department；D2 决策，auth_db 不含这些字段） |
+| user | 审批侧用户/组织（employeeId 唯一 / title / role / managerId / department；D2 决策，auth_db 不含这些字段） |
 | request | 申请单主表（业务单号 TR-#### / LV-#### 作主键） |
 | trip_leg | 差旅行程段 |
 | budget | 分项预算（Decimal(15,2)，对外「分」整数） |
@@ -83,8 +85,8 @@ qy-core-server/
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/aws/v1/auth/login` | 登录（验 auth_db 的 sysUser，签 JWT；免鉴权） |
-| GET | `/aws/v1/users/me` | 当前登录用户（role / managerId / department） |
+| POST | `/aws/v1/auth/login` | 登录（验 auth_db 的 sysUser，签 JWT；免鉴权）。响应 `{ token, user: { id, employeeId, name, title, role, department, managerId } }` |
+| GET | `/aws/v1/users/me` | 当前登录用户（employeeId / title / role / managerId / department） |
 | GET | `/aws/v1/users` | 用户/组织列表（`?department=&role=`） |
 | GET | `/aws/v1/users/:id` | 用户详情 |
 | GET | `/aws/v1/users/:id/requests` | 某用户发起的申请 |
@@ -98,7 +100,7 @@ qy-core-server/
 | GET/POST/PUT/DELETE | `/aws/v1/leave-requests/...` | 请假（与差旅对称，单号 LV-####） |
 | GET | `/aws/v1/requests` | 跨类型列表（`?type=&status=&scope=mine\|todo\|all`） |
 | POST | `/aws/v1/requests/batch` | 批量审批（approve/reject/cancel） |
-| GET | `/aws/v1/reports/dashboard` | 看板聚合 |
+| GET | `/aws/v1/reports/dashboard` | 看板聚合。口径：仅当前用户所在部门、排除本人（applicantId≠self）、排除草稿（status≠draft），与前端 `deptRequests` 对齐 |
 
 > 接口契约详见前端仓库 `backend/docs/API.md` 与 `backend/docs/API-ALIGNMENT.md`（已与前端对齐：路径 `/aws/v1`、响应 `{code,msg,data}`（成功 `code:'200'`/`msg:'成功'`，HTTP 始终 200，沿用全局 `ResponseInterceptor`/`AllExceptionsFilter`）、创建/编辑 payload 用 `fields` 包裹、MySQL 用 String 枚举）。
 
@@ -108,7 +110,7 @@ qy-core-server/
 
 - Node.js >= 18（推荐 v20.12.0）
 - Docker & Docker Compose
-- MySQL 5.7（或通过 Docker 启动）
+- MySQL 8.0（或通过 Docker 启动）
 
 ### 1. 安装依赖
 
@@ -381,4 +383,8 @@ curl http://localhost:3000/aws/v1/requests -H "Authorization: Bearer $TOKEN"
 | `npm run prisma:migrate` | 生成并应用三份 init 迁移（首次建库） |
 | `npm run prisma:migrate:aws` | approval_workflow_db 增量迁移（schema 变更后） |
 | `npm run prisma:deploy` | 仅应用已生成的迁移（容器启动用） |
+| `npm run prisma:seed` | 依次灌入 auth / ws-design / approval 三份 Mock 数据 |
+| `npm run prisma:seed:auth` | 仅灌入 auth_db Mock 数据 |
+| `npm run prisma:seed:ws` | 仅灌入 ws_design_db Mock 数据 |
+| `npm run prisma:seed:approval` | 仅灌入 approval_workflow_db Mock 数据 |
 | `npx prisma studio` | 打开 Prisma 数据管理界面 |

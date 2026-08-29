@@ -1,10 +1,9 @@
 node_modules/
 dist/
-.env.local
-.env.aws
-.env.wdv
+.env.*
 .DS_Store
 *.log
 PLAN-改名与双前端对接.md
 开发笔记.md
 src/prisma/generated/
+docker-compos-*.yml
