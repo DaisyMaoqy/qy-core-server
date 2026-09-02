@@ -13,6 +13,7 @@ import { RequestController } from './requests/request.controller';
 import { ReportController } from './requests/report.controller';
 import { AiPolishController } from './aiPolish/aiPolish.controller';
 import { AiPolishService } from './aiPolish/aiPolish.service';
+import { ContentValidatorService } from './aiPolish/content-validator.service';
 
 /**
  * approval-workflow 产品模块（流程/审批端）
@@ -41,6 +42,6 @@ import { AiPolishService } from './aiPolish/aiPolish.service';
     ReportController,
     AiPolishController,
   ],
-  providers: [AwsAuthService, UserService, RequestService, AiPolishService],
+  providers: [AwsAuthService, UserService, RequestService, AiPolishService, ContentValidatorService],
 })
 export class ApprovalWorkflowProductModule {}
