@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { AwsPrismaService } from '../../prisma/approval-workflow-prisma.service';
 import { AwsUser } from '../common/aws-auth.guard';
@@ -70,6 +71,7 @@ const TRANSITIONS: Record<string, TransitionRule[]> = {
 
 @Injectable()
 export class RequestService {
+  private readonly logger = new Logger(RequestService.name);
   constructor(private readonly prisma: AwsPrismaService) {}
 
   // ---------- 单号生成 ----------
