@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { AwsPrismaService } from '../../prisma/approval-workflow-prisma.service';
 import { AwsUser } from '../common/aws-auth.guard';
@@ -29,6 +30,7 @@ import {
 } from '../dto/dashboard.dto';
 import { MetaResponse } from '../dto/meta.dto';
 import { COMMENT_MAX, PENDING_STATUSES } from '../dto/enums';
+import { beijingMonthRange } from '../../common/time';
 
 type ActorRole = 'applicant' | 'manager' | 'finance';
 
@@ -70,6 +72,7 @@ const TRANSITIONS: Record<string, TransitionRule[]> = {
 
 @Injectable()
 export class RequestService {
+  private readonly logger = new Logger(RequestService.name);
   constructor(private readonly prisma: AwsPrismaService) {}
 
   // ---------- 单号生成 ----------
@@ -387,17 +390,8 @@ export class RequestService {
     }
 
     if (query.year) {
-      const y = query.year;
-      const start = new Date(y, 0, 1);
-      const end = new Date(y + 1, 0, 1);
-      if (query.month) {
-        where.createdAt = {
-          gte: new Date(y, query.month - 1, 1),
-          lt: new Date(y, query.month, 1),
-        };
-      } else {
-        where.createdAt = { gte: start, lt: end };
-      }
+      // 以北京时间口径收窄 createdAt（库内按 UTC 存储，故边界用 beijingMonthRange 换算）
+      where.createdAt = beijingMonthRange(query.year, query.month);
     }
 
     if (query.scope === 'mine') {
@@ -485,15 +479,8 @@ export class RequestService {
     where.applicantId = { not: user.id };
     where.status = { not: 'draft' };
     if (query.year) {
-      const y = query.year;
-      if (query.month) {
-        where.createdAt = {
-          gte: new Date(y, query.month - 1, 1),
-          lt: new Date(y, query.month, 1),
-        };
-      } else {
-        where.createdAt = { gte: new Date(y, 0, 1), lt: new Date(y + 1, 0, 1) };
-      }
+      // 以北京时间口径收窄 createdAt（库内按 UTC 存储，故边界用 beijingMonthRange 换算）
+      where.createdAt = beijingMonthRange(query.year, query.month);
     }
 
     const rows = await this.prisma.request.findMany({

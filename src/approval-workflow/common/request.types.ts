@@ -2,7 +2,7 @@
 
 export interface AuditEntryResponse {
   id: string;
-  at: string; // ISO
+  at: string; // ISO (+08:00)
   actorId: string;
   actorName: string;
   action: string;
@@ -52,9 +52,9 @@ export interface RequestResponse {
   applicantRole: string;
   department: string;
   status: string;
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
-  submittedAt?: string; // ISO
+  createdAt: string; // ISO (+08:00)
+  updatedAt: string; // ISO (+08:00)
+  submittedAt?: string; // ISO (+08:00)
   audit: AuditEntryResponse[];
   fields: TravelFieldsResponse | LeaveFieldsResponse;
 }

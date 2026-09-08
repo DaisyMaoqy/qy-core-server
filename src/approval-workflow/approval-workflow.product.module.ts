@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from '@nestjs/jwt';
 
 import { AwsAuthService } from './auth/aws-auth.service';
@@ -10,6 +11,9 @@ import { TravelRequestController } from './requests/travel-request.controller';
 import { LeaveRequestController } from './requests/leave-request.controller';
 import { RequestController } from './requests/request.controller';
 import { ReportController } from './requests/report.controller';
+import { AiPolishController } from './aiPolish/aiPolish.controller';
+import { AiPolishService } from './aiPolish/aiPolish.service';
+import { ContentValidatorService } from './aiPolish/content-validator.service';
 
 /**
  * approval-workflow 产品模块（流程/审批端）
@@ -24,6 +28,10 @@ import { ReportController } from './requests/report.controller';
       secret: process.env.JWT_SECRET || 'ws-design-jwt-secret-key-2026',
       signOptions: { expiresIn: '24h' },
     }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
   ],
   controllers: [
     AuthController,
@@ -32,7 +40,8 @@ import { ReportController } from './requests/report.controller';
     LeaveRequestController,
     RequestController,
     ReportController,
+    AiPolishController,
   ],
-  providers: [AwsAuthService, UserService, RequestService],
+  providers: [AwsAuthService, UserService, RequestService, AiPolishService, ContentValidatorService],
 })
 export class ApprovalWorkflowProductModule {}

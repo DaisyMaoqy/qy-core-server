@@ -11,6 +11,8 @@ import {
   Max,
   IsOptional,
   Matches,
+  ArrayMinSize,
+  ArrayMaxSize
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -51,7 +53,8 @@ export class TravelFieldsDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => LegDto)
-  @Length(1, MAX_LEGS)
+  @ArrayMinSize(1)        // ✅ 数组最少1个元素
+  @ArrayMaxSize(MAX_LEGS) // ✅ 数组最多 MAX_LEGS 个元素
   legs: LegDto[];
   @ValidateNested() @Type(() => BudgetAmountDto) budget: BudgetAmountDto;
   // 预算合计 > 1,000,000 分（1 万元）时，budgetNote 必填
@@ -76,7 +79,8 @@ export class TravelFieldsUpdateDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => LegDto)
-  @Length(1, MAX_LEGS)
+  @ArrayMinSize(1)        // ✅ 数组最少1个元素
+  @ArrayMaxSize(MAX_LEGS) // ✅ 数组最多 MAX_LEGS 个元素
   legs?: LegDto[];
   @IsOptional() @ValidateNested() @Type(() => BudgetAmountDto) budget?: BudgetAmountDto;
   @IsOptional() @IsString() @Length(0, NOTE_MAX) budgetNote?: string;

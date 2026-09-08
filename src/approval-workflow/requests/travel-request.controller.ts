@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { RequestService } from './request.service';
 import { AwsAuthGuard } from '../common/aws-auth.guard';
@@ -23,6 +24,7 @@ import { ActionDto, RejectActionDto } from '../dto/action.dto';
 @Controller('aws/v1/travel-requests')
 @UseGuards(AwsAuthGuard)
 export class TravelRequestController {
+  private readonly logger = new Logger(TravelRequestController.name);
   constructor(private readonly requestService: RequestService) {}
 
   /** GET /aws/v1/travel-requests（列表，支持 ?status/scope/keyword/...） */
