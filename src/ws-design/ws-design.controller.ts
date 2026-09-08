@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Query, Res, Req } from "@nestjs/common";
 import { Response } from "express";
 import { WsDesignService } from "./ws-design.service";
+import { convertDatesToBeijing } from "../common/time";
 
 @Controller("api/eoms/wsDesign")
 export class WsDesignController {
@@ -88,8 +89,9 @@ export class WsDesignController {
     const data = await this.wsDesignService.exportWsDesign(
       Number(designPackageId),
     );
-    // 返回 JSON 数据作为文件下载
-    const jsonStr = JSON.stringify(data, null, 2);
+    // 返回 JSON 数据作为文件下载（此接口用 @Res() 直写，绕过全局拦截器，
+    // 需手动把时间字段转成北京时间，避免 Date 被序列化为 UTC 的 Z）
+    const jsonStr = JSON.stringify(convertDatesToBeijing(data), null, 2);
     res.setHeader("Content-Type", "application/json");
     res.setHeader(
       "Content-Disposition",

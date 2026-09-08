@@ -5,6 +5,7 @@ import {
   TravelFieldsResponse,
   LeaveFieldsResponse,
 } from './request.types';
+import { toBeijingISO } from '../../common/time';
 
 /** 列表/详情统一使用的关联加载 */
 export const requestInclude = {
@@ -24,7 +25,7 @@ export type RequestWithRelations = Prisma.RequestGetPayload<{
 export function toRequestResponse(r: RequestWithRelations): RequestResponse {
   const audit: AuditEntryResponse[] = r.audit.map((a) => ({
     id: a.id,
-    at: a.at.toISOString(),
+    at: toBeijingISO(a.at) ?? '',
     actorId: a.actorId,
     actorName: a.actorName,
     action: a.action,
@@ -72,9 +73,9 @@ export function toRequestResponse(r: RequestWithRelations): RequestResponse {
     applicantRole: r.applicant.role,
     department: r.department,
     status: r.status,
-    createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt.toISOString(),
-    submittedAt: r.submittedAt ? r.submittedAt.toISOString() : undefined,
+    createdAt: toBeijingISO(r.createdAt) ?? '',
+    updatedAt: toBeijingISO(r.updatedAt) ?? '',
+    submittedAt: toBeijingISO(r.submittedAt),
     audit,
     fields,
   };

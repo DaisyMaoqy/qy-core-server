@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
+import { BeijingTimeInterceptor } from "./common/interceptors/beijing-time.interceptor";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 
 async function bootstrap() {
@@ -12,8 +13,12 @@ async function bootstrap() {
   //   ws-design → ws/admin/*；approval-workflow → aws/*
   // 这样两个独立产品天然隔离，无需运行时区分（详见阶段三 3.2）。
 
-  // 全局响应拦截器：统一包装返回体为 { code, msg, data }
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  // 全局时间拦截器：响应里的 Date 统一转为北京时间 ISO（应在 ResponseInterceptor 之前，
+  // 先转换原始数据再由其统一包装）
+  app.useGlobalInterceptors(
+    new BeijingTimeInterceptor(),
+    new ResponseInterceptor(),
+  );
 
   // 全局异常过滤器：捕获所有异常，统一返回 200，业务错误码在 body 中
   app.useGlobalFilters(new AllExceptionsFilter());
